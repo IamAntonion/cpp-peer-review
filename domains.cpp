@@ -4,14 +4,12 @@
 #include <sstream>
 #include <string_view>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
 class Domain {
 public:
-    // разработайте класс домена
-
-    // конструктор должен позволять конструирование из string, с сигнатурой определитесь сами
     Domain(const std::string& domain) {
         
         std::string add_dot = "." + domain;
@@ -20,7 +18,6 @@ public:
         domain_title_ = add_dot;
     }
     
-    // разработайте operator==
     bool operator==(const Domain& other_domain) const {
         
         return std::lexicographical_compare(domain_title_.begin(),
@@ -29,19 +26,13 @@ public:
                                             other_domain.domain_title_.end());
     }
 
-    // разработайте метод IsSubdomain, принимающий другой домен и возвращающий true, если this его поддомен
     bool IsSubdomain(const Domain& other_domain) const {
         
         if (!(other_domain.domain_title_.size() > domain_title_.size())) {
             
-            if (std::equal(other_domain.domain_title_.begin(), 
-                           other_domain.domain_title_.end(), 
-                           domain_title_.begin())) {
-                return true;
-                
-            } else {
-                return false;
-            }
+            return std::equal(other_domain.domain_title_.begin(),
+                              other_domain.domain_title_.end(),
+                              domain_title_.begin());
             
         } else {
             return false;
@@ -55,7 +46,6 @@ private:
 
 class DomainChecker {
 public:
-    // конструктор должен принимать список запрещённых доменов через пару итераторов
     template<typename Iterator>
     DomainChecker(const Iterator start, const Iterator end) {
  
@@ -71,34 +61,27 @@ public:
         forbidden_ = domains;
     }
 
-    // разработайте метод IsForbidden, возвращающий true, если домен запрещён
     bool IsForbidden(const Domain& domain_to_check) {
         
-        if (forbidden_.size()) {          
-            std::vector<Domain>::iterator domain_pos_it = std::upper_bound(forbidden_.begin(), 
-                                                                           forbidden_.end(), 
-                                                                           domain_to_check,
-                                                                        [](const Domain& lhs, const Domain& rhs) {
-                                                                             return lhs.GetDomain() < rhs.GetDomain();
-                                                                        });
- 
-            if (forbidden_.begin() == domain_pos_it) {
-                return domain_to_check.IsSubdomain(forbidden_[domain_pos_it - forbidden_.begin()]);
- 
-            } else {
-                return domain_to_check.IsSubdomain(forbidden_[domain_pos_it - forbidden_.begin() - 1]);
-                
-            }
+        if (!forbidden_.size()) return false;          
             
+        std::vector<Domain>::iterator domain_pos_it = std::upper_bound(forbidden_.begin(),   
+                                                                       forbidden_.end(), 
+                                                                       domain_to_check,
+                                                                       [](const Domain& lhs, const Domain& rhs) {
+                                                                           return lhs.GetDomain() < rhs.GetDomain();
+                                                                       });
+ 
+        if (forbidden_.begin() == domain_pos_it) {
+            return domain_to_check.IsSubdomain(forbidden_[domain_pos_it - forbidden_.begin()]);
         } else {
-           return false; 
+            return domain_to_check.IsSubdomain(forbidden_[domain_pos_it - forbidden_.begin() - 1]);
         }
     }
 private:
     std::vector<Domain> forbidden_;
 };
 
-// разработайте функцию ReadDomains, читающую заданное количество доменов из стандартного входа
 const std::vector<Domain> ReadDomains(std::istream& input, size_t amount) {
     
     std::vector<Domain> domains;
@@ -124,7 +107,31 @@ Number ReadNumberOnLine(istream& input) {
     return num;
 }
 
+void TestDomainCheckerIsForbidden() {
+    std::vector<Domain> domains = {Domain("gdz.ru"), Domain("com.gdz.ru")};
+    DomainChecker checker(domains.begin(), domains.end());
+    Domain domain1("gdz.ru");
+    Domain domain2("maps.me");
+    
+    assert(checker.IsForbidden(domain1) == true);
+    assert(checker.IsForbidden(domain2) == false);
+}
+
+void TestDomainConstructor() {
+    Domain d("gdz.ru");
+    assert(d.GetDomain() == "ur.zdg.");
+}
+
+void TestDomainIsSubdomain() {
+    Domain d1("maps.com");
+    Domain d2("maps.maps.com");
+    assert(d2.IsSubdomain(d1));
+}
+
 int main() {
+    TestDomainConstructor();
+    TestDomainIsSubdomain();
+    TestDomainCheckerIsForbidden();
     const std::vector<Domain> forbidden_domains = ReadDomains(cin, ReadNumberOnLine<size_t>(cin));
     DomainChecker checker(forbidden_domains.begin(), forbidden_domains.end());
 
