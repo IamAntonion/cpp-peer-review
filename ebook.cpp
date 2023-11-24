@@ -41,21 +41,17 @@ void Book::Read(int user_id,
 }
  
 double Book::Cheer(int user_id) {
- 
-    if (!pages_for_user_id_[user_id]) {
+    if (pages_for_user_id_[user_id] <= 0) {
         return 0.0;
- 
-    } else if (!(number_of_authorized_people - 1)) {
-        return 1.0;
-    } else {
-        int pages = pages_for_user_id_[user_id];
-        if (number_of_authorized_people == users_id_[pages - 1]) {
-            return 0.0;
-            
-        } else {
-            return (number_of_authorized_people - users_id_[pages - 1]) / (number_of_authorized_people * 1.0 - 1.0); 
-        }           
     }
+    if (number_of_authorized_people - 1 <= 0) {
+        return 1.0;
+    }
+    int pages = pages_for_user_id_[user_id];
+    if (number_of_authorized_people == users_id_[pages - 1]) {
+        return 0.0;   
+    }
+    return (number_of_authorized_people - users_id_[pages - 1]) / (number_of_authorized_people * 1.0 - 1.0);
 }
  
 void Parse(std::istream& input, 
