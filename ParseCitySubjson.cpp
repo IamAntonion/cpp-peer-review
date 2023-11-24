@@ -14,12 +14,10 @@ void ParseCitySubjson(vector<City>& cities, const Json& json, const Country& cou
     }
 }
 
-vector<Country> ParseCountryList(const Json& json_lang) {
-    std::vector<Country> country_result;
+void ParseCountryList(vector<Country>& country_, const Json& json_lang) {
     for (const auto& lang_obj : json_lang.AsList()) {
-            country_result.languages.push_back(FromString<Language>(lang_obj.AsString()));
+            country_.languages.push_back(FromString<Language>(lang_obj.AsString()));
     }
-    return country_result;
 }
 
 void ParseCountryJson(vector<Country>& countries, vector<City>& cities, const Json& json) {
@@ -32,7 +30,7 @@ void ParseCountryJson(vector<Country>& countries, vector<City>& cities, const Js
             .time_zone = country_obj["time_zone"s].AsString(),
         });
         Country& country = countries.back();
-        country = ParseCountryList(country_obj["languages"s]);
+        ParseCountryList(country, country_obj["languages"s]);
         ParseCitySubjson(cities, country_obj["cities"s], countries);
     }
 } 
